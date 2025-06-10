@@ -22,6 +22,8 @@ services:
       - .env
     ports:
       - "${PGADMIN_PORT}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - db
     networks:
@@ -29,6 +31,7 @@ services:
 
 volumes:
   postgres_data:
+  pgadmin_data:
 
 networks:
   backend:
