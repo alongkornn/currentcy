@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+
+    // Language features
+    "target": "ES2020", // กำหนด target ให้เป็น ES2020
+    "lib": ["ES2020", "DOM"], // ใช้ lib ของ ESNext และ DOM
+    "moduleDetection": "auto", // บังคับให้ใช้ระบบ module แบบ auto
+    "jsx": "preserve", // ใช้ JSX แบบไม่ต้อง compile ให้เป็น React.createElement
+
+    // Module resolution
+    "module": "CommonJS", // ใช้ระบบ module ของ CommonJS
+    "rootDir": "./src", // กำหนด root directory
+    "outDir": "./dist", // กำหนด output directory
+
+    // JavaScript Support
+    "allowJs": true, // อนุญาตให้ import ไฟล์ .js ได้
+
+    // Bundler mode
+    "moduleResolution": "node", // ใช้ระบบ module ของ bundler
+    // "allowImportingTsExtensions": true, // อนุญาตให้ import ไฟล์ .ts ได้
+    // "verbatimModuleSyntax": true, // บังคับให้การใช้งาน import ต้องเป็นไปตามประเภทที่ชัดเจน
+    // "noEmit": true, // ไม่สร้างไฟล์ .js หลังจากทำการ compile
+
+    // Interoperability
+    "esModuleInterop": true, // ใช้ร่วมกับ CommonJS
+    "forceConsistentCasingInFileNames": true, // บังคับให้ชื่อไฟล์ต้องตรงกัน
+
+    // Best practices
+    "strict": true, // ใช้ strict mode
+    "skipLibCheck": true, // ข้ามการตรวจสอบไฟล์ .d.ts
+    "noFallthroughCasesInSwitch": true, // บังคับให้ใช้ break ใน switch case
+
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": false, // ไม่ต้องตรวจสอบตัวแปรที่ไม่ได้ใช้
+    "noUnusedParameters": false, // ไม่ต้องตรวจสอบ parameter ที่ไม่ได้ใช้
+    "noPropertyAccessFromIndexSignature": false // ไม่ต้องตรวจสอบการเข้าถึง property ผ่าน index signature
+  },
+  "include": ["src/**/*"], // ระบุไฟล์ที่ต้องการ compile
+  "exclude": ["node_modules", "dist"] // ระบุไฟล์ที่ไม่ต้องการ compile
+}
