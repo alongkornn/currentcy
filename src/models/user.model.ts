@@ -11,7 +11,7 @@ export interface User {
 export const createUser = async (user: Omit<User, "id" | "created_at">): Promise<User> => {
     const result = await pool.query(
         `INSERT INTO users (name, email, password)
-        VALUES ($1, $2, $3
+        VALUES ($1, $2, $3)
         RETURNING *`,
         [user.name, user.email, user.password]
     );
