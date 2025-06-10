@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { User, createUser } from "../models/user.model";
+import { createUser, getAllUser, User } from "../models/user.model";
 import bcrypt from "bcrypt";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -36,3 +36,15 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
     
 };
+
+export const getUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const users: User[] = await getAllUser();
+        res.status(200).json({"message": "Fetch users Successfully", "data": users})
+    } catch (error) {
+       console.error("Error creating user:", error);
+        res.status(500).json({
+            error: "Internal server error"
+        });
+    }
+}
