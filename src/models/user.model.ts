@@ -23,7 +23,7 @@ export const getAllUser = async (): Promise<User[]> => {
     return result.rows
 }
 
-export const getUserByEmail = async (email: string): Promise<User> => {
+export const getUserByEmail = async (email: string): Promise<User | null> => {
     const result = await pool.query(
         `SELECT * FROM users WHERE email = $1`,
         [email]
