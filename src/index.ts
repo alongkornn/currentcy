@@ -4,14 +4,18 @@ import pool from "./config/db";
 // import user routes
 import userRoute from "./routes/user.route"
 
+// import offer routes
+import offerRoute from "./routes/offer.route"
+
 const app = express();
 const port: number = Number(process.env.SERVER_PORT) || 3000;
 
-// config app
+// ตั้งค่าให้แปลงค่าเป็น json
 app.use(express.json());
 
 // routes
-app.use("/api", userRoute)
+app.use("/api", userRoute);
+app.use("/api", offerRoute);
 
 async function startServer() {
   try {
