@@ -8,10 +8,10 @@ export interface CryptoBalance {
     balance: number;
 };
 
-export const getCryptoBalance = async (user_id: number, currency: string): Promise<CryptoBalance> => {
+export const getCryptoBalance = async (userId: number, currency: string): Promise<CryptoBalance> => {
     const result = await pool.query(
-        `SELECT * FROM users WHERE user_id = $1 AND currency = $2`,
-        [user_id, currency]
+        `SELECT * FROM crypto_balances WHERE user_id = $1 AND currency = $2`,
+        [userId, currency]
     );
     return result.rows[0]
 }

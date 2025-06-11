@@ -52,8 +52,21 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
         if (type === "sell") {
             // ตรวจสอบว่ามีรายการเสนอซื้อตรงตามเงื่อนไขไหม
             const buyers = await getOfferByBuyers(price_per_unit, amount, currency, price_currency);
-            const buyer: Offer = buyers[0];
+            
+            // ถ้าไม่มีให้สร้าง offer ไว้ในสถานะ open เพื่อรอรายการเสนอซื้อที่ตรงกัน
+            if (buyers.length === 0) {
+                // ตรวจสอบจำนวนเหรียญว่าเพียงพอต่อการขายไหม ของผู้ขาย
+                const sellerCryptoBalances = await getCryptoBalance(user_id, currency)
+                if (sellerCryptoBalances.balance < amount) {
+                    res.status(400).json({ "message": "Amount too much" })
+                    return
+                }
+                const offer = await createOfferNoMatch(offerData);
+                res.status(201).json({ "message": "Create offer sucessfully", "data": offer })
+                return
+            }
 
+            const buyer: Offer = buyers[0];
             // ราคาที่ผู้ซื้อต้องจ่าย
             const buy_price = buyer.amount * buyer.price_per_unit
 
@@ -61,20 +74,6 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             const buyerFiatBalance: FiatBalance = await getFiatBalance(buyer.user_id, buyer.currency);
             if (buy_price >= buyerFiatBalance.balance) {
                 res.status(400).json({ "message": "Price per unit is too much" })
-                return
-            }
-            
-            // ตรวจสอบจำนวนเหรียญว่าเพียงพอต่อการขายไหม ของผู้ขาย
-            const sellerCryptoBalances: CryptoBalance = await getCryptoBalance(user_id, currency)
-            if (sellerCryptoBalances.balance < amount) {
-                res.status(400).json({ "message": "Amount too much" })
-                return
-            }
-            
-            // ถ้าไม่มีให้สร้าง offer ไว้ในสถานะ open เพื่อรอรายการเสนอซื้อที่ตรงกัน
-            if (buyers.length === 0) {
-                const offer = await createOfferNoMatch(offerData);
-                res.status(201).json({ "message": "Create offer sucessfully", "data": offer })
                 return
             }
     
