@@ -55,6 +55,7 @@ export const getOfferByBuyers = async (price_per_unit: number, amount: number, c
          AND amount <= $2
          AND currency = $3
          AND price_currency = $4
+         AND status = open
        ORDER BY price_per_unit DESC`,
       [price_per_unit, amount, currency, price_currency]
     );
@@ -70,11 +71,12 @@ export const getOfferBySellers = async (price_per_unit: number, amount: number, 
   try {
     const result = await pool.query(
       `SELECT * FROM offers 
-       WHERE type = 'buy' 
+       WHERE type = 'sell' 
          AND price_per_unit <= $1
          AND amount >= $2
          AND currency = $3
          AND price_currency = $4
+         AND status = open
        ORDER BY price_per_unit ASC`,
       [price_per_unit, amount, currency, price_currency]
     );

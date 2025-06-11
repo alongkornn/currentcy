@@ -52,15 +52,16 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
         if (type === "sell") {
             // ตรวจสอบว่ามีรายการเสนอซื้อตรงตามเงื่อนไขไหม
             const buyers = await getOfferByBuyers(price_per_unit, amount, currency, price_currency);
-            
-            // ถ้าไม่มีให้สร้าง offer ไว้ในสถานะ open เพื่อรอรายการเสนอซื้อที่ตรงกัน
-            if (buyers.length === 0) {
-                // ตรวจสอบจำนวนเหรียญว่าเพียงพอต่อการขายไหม ของผู้ขาย
+
+            // ตรวจสอบจำนวนเหรียญว่าเพียงพอต่อการขายไหม ของผู้ขาย
                 const sellerCryptoBalances = await getCryptoBalance(user_id, currency)
                 if (sellerCryptoBalances.balance < amount) {
                     res.status(400).json({ "message": "Amount too much" })
                     return
                 }
+            
+            // ถ้าไม่มีให้สร้าง offer ไว้ในสถานะ open เพื่อรอรายการเสนอซื้อที่ตรงกัน
+            if (buyers.length === 0) {
                 const offer = await createOfferNoMatch(offerData);
                 res.status(201).json({ "message": "Create offer sucessfully", "data": offer })
                 return
@@ -71,16 +72,15 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             const buy_price = buyer.amount * buyer.price_per_unit
 
             // ดึงข้อมูลจำนวนเงินของผู้ซื้อ
-            const buyerFiatBalance: FiatBalance = await getFiatBalance(buyer.user_id, buyer.currency);
+            const buyerFiatBalance: FiatBalance = await getFiatBalance(buyer.user_id, buyer.price_currency);
             if (buy_price >= buyerFiatBalance.balance) {
                 res.status(400).json({ "message": "Price per unit is too much" })
                 return
             }
     
             // ถ้ามีรายการเสนอซื้อจะขายให้กับคนแรกที่ได้เสนอขาย
-            const offer = await createOfferIsMatch(offerData);
-            await updateOffer(buyer.id, "completed");
-            res.status(201).json({ "message": "Create offer sucessfully", "data": offer });
+            
+            
             
             // อัปเดตจำนวนเหรียญ
             const buyerCryptoBalance: CryptoBalance = await getCryptoBalance(buyer.user_id, buyer.currency);
@@ -118,6 +118,11 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
                 res.status(500).json({ "message": "Can not add transaction" })
                 return
             }
+
+            const offer = await createOfferIsMatch(offerData);
+            await updateOffer(buyer.id, "completed");
+            res.status(201).json({ "message": "Create offer sucessfully", "data": offer });
+            return
         }
 
         if (type === "buy") {
@@ -125,15 +130,66 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             const sellers = await getOfferBySellers(price_per_unit, amount, currency, price_currency);
             const seller: Offer = sellers[0];
 
+            const buy_price = price_per_unit * amount
+
+            // ตรวจสอบว่าผู้ซื่้อมีเงินพอที่จะเสนอซื้อไหม
+            const buyerFiatBalance: FiatBalance = await getFiatBalance(user_id, price_currency);
+        
+                if (buy_price >= buyerFiatBalance.balance) {
+                    res.status(400).json({ "message": "Price per unit is too much" })
+                    return
+                }
+
             if (sellers.length === 0) {
                 const offer = await createOfferNoMatch(offerData);
                 res.status(201).json({ "message": "Create offer sucessfully", "data": offer})
                 return
             }
+            
+            // อัปเดตจำนวนเหรียญ
+            const sellerCryptoBalance: CryptoBalance = await getCryptoBalance(seller.user_id, seller.currency);
+            await reduceCryptoBalance(sellerCryptoBalance.user_id, sellerCryptoBalance.currency, amount)
+            await increaseCryptoBalance(user_id, currency, amount);
+
+            // อัปเดตจำนวนเงิน
+            const sellerFiatBalance: FiatBalance = await getFiatBalance(seller.user_id, seller.price_currency);
+            await reduceFiatBalance(buyerFiatBalance.user_id, buyerFiatBalance.currency, buy_price);
+            await increaseFiatBalance(sellerFiatBalance.user_id, sellerFiatBalance.currency, buy_price);
+
+            // สร้างประวัติการโอนเหรียญ
+            const cryptoTransactionData = {
+                from_user_id: seller.user_id,
+                to_user_id: user_id,
+                currency,
+                amount: amount
+            }
+            const cryptoTransaction: CryptoTransaction = await createCryptoTransaction(cryptoTransactionData);
+            if (!cryptoTransaction) {
+                res.status(500).json({ "message": "Can not add transaction" })
+                return
+            }
+
+            // สร้างประวัติการโอนเงิน
+            const fiatTransactionData: Omit<FiatTransaction, "id" | "timestamp"> = {
+                from_user_id: user_id,
+                to_user_id: seller.user_id,
+                currency,
+                amount: buy_price,
+                type: "transfer"
+            }
+
+            const fiatTransaction: FiatTransaction = await createFiatTransaction(fiatTransactionData);
+            if (!fiatTransaction) {
+                res.status(500).json({ "message": "Can not add transaction" })
+            }
+
+            // อัปเดตสถานะของผู้ขาย
+            await updateOffer(seller.user_id, "completed");
 
             const offer = await createOfferIsMatch(offerData);
             await updateOffer(seller.id, "completed");
-            res.status(201).json({"message": "Create offer sucessfully", "data": offer})
+            res.status(201).json({ "message": "Create offer sucessfully", "data": offer })
+            return
         }
     } catch (error) {
         console.error("Error creating user:", error);
