@@ -157,11 +157,11 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             await increaseFiatBalance(sellerFiatBalance.user_id, sellerFiatBalance.currency, buy_price);
 
             // สร้างประวัติการโอนเหรียญ
-            const cryptoTransactionData = {
+            const cryptoTransactionData: Omit<CryptoTransaction, "id" | "timestamp"> = {
                 from_user_id: seller.user_id,
                 to_user_id: user_id,
                 currency,
-                amount: amount
+                amount
             }
             const cryptoTransaction: CryptoTransaction = await createCryptoTransaction(cryptoTransactionData);
             if (!cryptoTransaction) {
@@ -181,10 +181,11 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             const fiatTransaction: FiatTransaction = await createFiatTransaction(fiatTransactionData);
             if (!fiatTransaction) {
                 res.status(500).json({ "message": "Can not add transaction" })
+                return
             }
 
             // อัปเดตสถานะของผู้ขาย
-            await updateOffer(seller.user_id, "completed");
+            await updateOffer(seller.id, "completed");
 
             const offer = await createOfferIsMatch(offerData);
             await updateOffer(seller.id, "completed");

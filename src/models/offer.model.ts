@@ -37,8 +37,8 @@ export const createOfferIsMatch = async (offer: Omit<Offer, "id" | "status" | "c
 export const updateOffer = async (offerID: number, offerStatus: string) => {
   try {
     await pool.query(
-      `UPDATE offers SET status = $1, updated_at = NOW(), WHERE id = $2 `,
-      [offerStatus, , offerID]
+      `UPDATE offers SET status = $1, updated_at = NOW() WHERE id = $2 `,
+      [offerStatus, offerID]
     );
   } catch (error) {
     console.log(error)
@@ -55,7 +55,7 @@ export const getOfferByBuyers = async (price_per_unit: number, amount: number, c
          AND amount <= $2
          AND currency = $3
          AND price_currency = $4
-         AND status = open
+         AND status = 'open'
        ORDER BY price_per_unit DESC`,
       [price_per_unit, amount, currency, price_currency]
     );
@@ -76,7 +76,7 @@ export const getOfferBySellers = async (price_per_unit: number, amount: number, 
          AND amount >= $2
          AND currency = $3
          AND price_currency = $4
-         AND status = open
+         AND status = 'open'
        ORDER BY price_per_unit ASC`,
       [price_per_unit, amount, currency, price_currency]
     );

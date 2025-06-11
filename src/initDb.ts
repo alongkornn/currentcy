@@ -92,12 +92,14 @@ const createTables = async () => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS fiat_transactions (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL,
-        type VARCHAR(20) NOT NULL,
-        amount NUMERIC NOT NULL,
+        from_user_id INTEGER NOT NULL,
+        to_user_id INTEGER NOT NULL,
         currency VARCHAR(10) NOT NULL,
+        amount NUMERIC NOT NULL,
+        type VARCHAR(20) NOT NULL,
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE SET NULL
       );
     `);
 

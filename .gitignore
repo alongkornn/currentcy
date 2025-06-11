@@ -1,6 +1,8 @@
 # dependencies (bun install)
 node_modules
 
+note.txt
+
 # output
 out
 dist
