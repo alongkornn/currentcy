@@ -8,20 +8,36 @@ export interface CryptoBalance {
     balance: number;
 };
 
-export const getCryptoBalance = async (user_id: number, currency: string): Promise<CryptoBalance | null> => {
+export const getCryptoBalance = async (user_id: number, currency: string): Promise<CryptoBalance> => {
     const result = await pool.query(
         `SELECT * FROM users WHERE user_id = $1 AND currency = $2`,
         [user_id, currency]
     );
-    return result.rows[0] || null
+    return result.rows[0]
 }
 
-export const updateCryptoBalance = async (user_id: number, currency: string, amount: number) => {
+export const increaseCryptoBalance = async (user_id: number, currency: string, amount: number) => {
     // validate user_id and currency
     const existing = await getCryptoBalance(user_id, currency);
     if (existing) {
         await pool.query(
             `UPDATE crypto_balances SET balance = balance + $1 WHERE user_id = $2 AND currency = $3`,
+            [amount, user_id, currency]
+        );
+    } else {
+        await pool.query(
+            `INSERT INTO crypto_balances (user_id, currency, balance) VALUES ($1, $2, $3)`,
+            [user_id, currency, amount]
+        );
+    };
+};
+
+export const reduceCryptoBalance = async (user_id: number, currency: string, amount: number) => {
+    // validate user_id and currency
+    const existing = await getCryptoBalance(user_id, currency);
+    if (existing) {
+        await pool.query(
+            `UPDATE crypto_balances SET balance = balance - $1 WHERE user_id = $2 AND currency = $3`,
             [amount, user_id, currency]
         );
     } else {
