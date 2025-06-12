@@ -37,6 +37,7 @@ const createTables = async () => {
         id SERIAL PRIMARY KEY,
         offer_buy_id INTEGER NOT NULL,
         offer_sell_id INTEGER NOT NULL,
+        currency VARCHAR(10) NOT NULL,
         amount NUMERIC NOT NULL,
         price NUMERIC NOT NULL,
         traded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

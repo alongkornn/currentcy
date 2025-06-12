@@ -56,6 +56,20 @@ export const updateOffer = async (offerID: number, offerStatus: string) => {
   }
 }
 
+export const updateOfferAmount = async (offerID: number, amount: number) => {
+  try {
+    await pool.query(
+      `UPDATE offers SET amount = $1, updated_at = NOW() WHERE id = $2 `,
+      [amount, offerID]
+    );
+  } catch (error) {
+    console.log("Error : ", error);
+    throw error;
+  }
+}
+
+
+
 // ดึงข้อมูลของผู้ซื้อที่ตรงตามเงื่อนไข
 export const getOfferByBuyers = async (price_per_unit: number, amount: number, currency: string, price_currency:number): Promise<Offer[]> => {
   try {

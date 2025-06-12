@@ -6,7 +6,8 @@ import {
     Offer,
     createOfferIsMatch,
     updateOffer,
-    getOfferBySellers
+    getOfferBySellers,
+    updateOfferAmount
 } from "../models/offer.model";
 
 // cryptoBalance
@@ -31,6 +32,9 @@ import { createCryptoTransaction, CryptoTransaction } from "../models/cryptoTran
 // fiatTransaction
 import { createFiatTransaction, FiatTransaction } from "../models/fiatTransaction.model";
 
+// trade
+import { Trade, createTrade } from "../models/trade.model";
+
 export const createOffer = async (req: Request, res: Response): Promise<void> => {
     try {
         const { user_id, type, currency, amount, price_per_unit, price_currency } = req.body;
@@ -54,11 +58,11 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             const buyers = await getOfferByBuyers(price_per_unit, amount, currency, price_currency);
 
             // ตรวจสอบจำนวนเหรียญว่าเพียงพอต่อการขายไหม ของผู้ขาย
-                const sellerCryptoBalances = await getCryptoBalance(user_id, currency)
-                if (sellerCryptoBalances.balance < amount) {
-                    res.status(400).json({ "message": "Amount is too much" })
-                    return
-                }
+            const sellerCryptoBalances = await getCryptoBalance(user_id, currency)
+            if (sellerCryptoBalances.balance < amount) {
+                res.status(400).json({ "message": "Amount is too much" })
+                return
+            }
             
             // ถ้าไม่มีให้สร้าง offer ไว้ในสถานะ open เพื่อรอรายการเสนอซื้อที่ตรงกัน
             if (buyers.length === 0) {
@@ -105,7 +109,7 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             const fiatTransactionData: Omit<FiatTransaction, "id" | "timestamp"> = {
                 from_user_id: buyer.user_id,
                 to_user_id: user_id,
-                currency,
+                currency: price_currency,
                 amount: buy_price,
                 type: "transfer"
             }
@@ -116,9 +120,22 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
                 return
             }
 
-            const offer = await createOfferIsMatch(offerData);
+            const offerSeller = await createOfferIsMatch(offerData);
             await updateOffer(buyer.id, "completed");
-            res.status(201).json({ "message": "Create offer sucessfully", "data": offer });
+
+
+
+            //สร้างรายการ Trades
+            const tradeData: Omit<Trade, "id" | "traded_at"> = {
+                offer_buy_id: buyer.id,
+                offer_sell_id: offerSeller.id,
+                currency,
+                amount: buyer.amount,
+                price: buy_price
+            }
+            const trade: Trade = await createTrade(tradeData);
+    
+            res.status(201).json({ "message": "Create offer sucessfully", "data": offerSeller });
             return
         }
 
@@ -170,7 +187,7 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             const fiatTransactionData: Omit<FiatTransaction, "id" | "timestamp"> = {
                 from_user_id: user_id,
                 to_user_id: seller.user_id,
-                currency,
+                currency: price_currency,
                 amount: buy_price,
                 type: "transfer"
             }
@@ -182,11 +199,29 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             }
 
             // อัปเดตสถานะของผู้ขาย
-            await updateOffer(seller.id, "completed");
+            const lastAmount: number = seller.amount - amount
+            // ตรวจสอบว่าเหรียญที่เสนอขายหมดหรือยังถ้าหมดแล้วถึงจะเปลี่ยนสถานะเป็น completed
+            if (lastAmount === 0) {
+                await updateOffer(seller.id, "completed");
+            }
 
-            const offer = await createOfferIsMatch(offerData);
-            await updateOffer(seller.id, "completed");
-            res.status(201).json({ "message": "Create offer sucessfully", "data": offer })
+            await updateOfferAmount(seller.id, lastAmount);
+
+            // สร้างรายการ offer
+            const offerBuyer = await createOfferIsMatch(offerData);
+
+            //สร้างรายการ Trades
+            const tradeData: Omit<Trade, "id" | "traded_at"> = {
+                offer_buy_id: offerBuyer.id,
+                offer_sell_id: seller.id,
+                currency,
+                amount,
+                price: buy_price
+            } 
+
+            const trade: Trade = await createTrade(tradeData);
+
+            res.status(201).json({ "message": "Create offer sucessfully", "data": offerBuyer })
             return
         }
     } catch (error) {
