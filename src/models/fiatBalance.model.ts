@@ -28,8 +28,9 @@ export const increaseFiatBalance = async (userId: number, currency: string, amou
         `UPDATE fiat_balances SET balance = balance + $1 WHERE user_id = $2 AND currency = $3`,
         [amount, userId, currency]
       );
+    } else {
+      return console.log("FiatBalance could not be found with the user.")
     }
-    return console.log("FiatBalance could not be found with the user.")
   } catch (error) {
     console.log("Error : ", error);
     throw error;
@@ -44,8 +45,9 @@ export const reduceFiatBalance = async (userId: number, currency: string, amount
         `UPDATE fiat_balances SET balance = balance - $1 WHERE user_id = $2 AND currency = $3`,
         [amount, userId, currency]
       );
+    } else {
+      return console.log("FiatBalance could not be found with the user.")
     }
-    return console.log("FiatBalance could not be found with the user.")
   } catch (error) {
     console.log("Error : ", error);
     throw error;
