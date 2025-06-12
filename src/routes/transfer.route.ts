@@ -5,8 +5,8 @@ import { createTransferCrypto, createTransferFiat } from "../controllers/transfe
 
 const router = express.Router();
 
-router.post("/tranfer/fiat", createTransferFiat);
-router.post("/tranfer/crypto", createTransferCrypto);
+router.post("/transfer/fiat", createTransferFiat);
+router.post("/transfer/crypto", createTransferCrypto);
 
 
 export default router;
