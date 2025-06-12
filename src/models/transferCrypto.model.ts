@@ -5,6 +5,6 @@ export interface TransferCrypto {
     id: number;
     from_user_id: number;
     to_user_id: number;
-    balance: number;
+    currency: number;
     amount: number
 };
