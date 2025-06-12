@@ -16,7 +16,7 @@ export const getCryptoBalance = async (userId: number, currency: string): Promis
         );
         return result.rows[0]
     } catch (error) {
-        console.log(error);
+        console.log("Error : ", error);
         throw error;
     }
 }
@@ -32,7 +32,7 @@ export const increaseCryptoBalance = async (user_id: number, currency: string, a
         }
         return console.log("CryptoBalance could not be found with the user.")
     } catch (error) {
-        console.log(error);
+        console.log("Error : ", error);
         throw error
     }
 };
@@ -48,7 +48,7 @@ export const reduceCryptoBalance = async (user_id: number, currency: string, amo
         }
         return console.log("FiatBalance could not be found with the user.")
     } catch (error) {
-        console.log(error);
+        console.log("Error : ", error);
         throw error;
     }
 };

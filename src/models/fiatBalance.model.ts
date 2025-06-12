@@ -8,11 +8,16 @@ export interface FiatBalance {
 }
 
 export const getFiatBalance = async (userId: number, currency: string): Promise<FiatBalance> => {
-  const result = await pool.query(
-    `SELECT * FROM fiat_balances WHERE user_id = $1 AND currency = $2`,
-    [userId, currency]
-  );
-  return result.rows[0];
+  try {
+    const result = await pool.query(
+      `SELECT * FROM fiat_balances WHERE user_id = $1 AND currency = $2`,
+      [userId, currency]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.log("Error", error)
+    throw error;
+  }
 };
 
 export const increaseFiatBalance = async (userId: number, currency: string, amount: number) => {
@@ -26,7 +31,7 @@ export const increaseFiatBalance = async (userId: number, currency: string, amou
     }
     return console.log("FiatBalance could not be found with the user.")
   } catch (error) {
-    console.log(error)
+    console.log("Error : ", error);
     throw error;
   }
 };
@@ -42,7 +47,7 @@ export const reduceFiatBalance = async (userId: number, currency: string, amount
     }
     return console.log("FiatBalance could not be found with the user.")
   } catch (error) {
-    console.log(error)
+    console.log("Error : ", error);
     throw error;
   }
 };
