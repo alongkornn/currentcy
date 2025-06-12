@@ -56,7 +56,7 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             // ตรวจสอบจำนวนเหรียญว่าเพียงพอต่อการขายไหม ของผู้ขาย
                 const sellerCryptoBalances = await getCryptoBalance(user_id, currency)
                 if (sellerCryptoBalances.balance < amount) {
-                    res.status(400).json({ "message": "Amount too much" })
+                    res.status(400).json({ "message": "Amount is too much" })
                     return
                 }
             
@@ -79,13 +79,10 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
             }
     
             // ถ้ามีรายการเสนอซื้อจะขายให้กับคนแรกที่ได้เสนอขาย
-            
-            
-            
             // อัปเดตจำนวนเหรียญ
             const buyerCryptoBalance: CryptoBalance = await getCryptoBalance(buyer.user_id, buyer.currency);
             await increaseCryptoBalance(buyerCryptoBalance.user_id, buyerCryptoBalance.currency, buyer.amount)
-            await reduceCryptoBalance(user_id, currency, amount);
+            await reduceCryptoBalance(user_id, currency, buyer.amount);
 
             // อัปเดตจำนวนเงิน
             await reduceFiatBalance(buyerFiatBalance.user_id, buyerFiatBalance.currency, buy_price);

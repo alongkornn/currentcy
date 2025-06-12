@@ -16,31 +16,33 @@ export const getFiatBalance = async (userId: number, currency: string): Promise<
 };
 
 export const increaseFiatBalance = async (userId: number, currency: string, amount: number) => {
-  const existing = await getFiatBalance(userId, currency);
-  if (existing) {
-    await pool.query(
-      `UPDATE fiat_balances SET balance = balance + $1 WHERE user_id = $2 AND currency = $3`,
-      [amount, userId, currency]
-    );
-  } else {
-    await pool.query(
-      `INSERT INTO fiat_balances (user_id, currency, balance) VALUES ($1, $2, $3)`,
-      [userId, currency, amount]
-    );
+  try {
+    const existing = await getFiatBalance(userId, currency);
+    if (existing) {
+      await pool.query(
+        `UPDATE fiat_balances SET balance = balance + $1 WHERE user_id = $2 AND currency = $3`,
+        [amount, userId, currency]
+      );
+    }
+    return console.log("FiatBalance could not be found with the user.")
+  } catch (error) {
+    console.log(error)
+    throw error;
   }
 };
 
 export const reduceFiatBalance = async (userId: number, currency: string, amount: number) => {
-  const existing = await getFiatBalance(userId, currency);
-  if (existing) {
-    await pool.query(
-      `UPDATE fiat_balances SET balance = balance - $1 WHERE user_id = $2 AND currency = $3`,
-      [amount, userId, currency]
-    );
-  } else {
-    await pool.query(
-      `INSERT INTO fiat_balances (user_id, currency, balance) VALUES ($1, $2, $3)`,
-      [userId, currency, amount]
-    );
+  try {
+    const existing = await getFiatBalance(userId, currency);
+    if (existing) {
+      await pool.query(
+        `UPDATE fiat_balances SET balance = balance - $1 WHERE user_id = $2 AND currency = $3`,
+        [amount, userId, currency]
+      );
+    }
+    return console.log("FiatBalance could not be found with the user.")
+  } catch (error) {
+    console.log(error)
+    throw error;
   }
 };
