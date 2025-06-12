@@ -21,6 +21,20 @@ export const getCryptoBalance = async (userId: number, currency: string): Promis
     }
 }
 
+export const createFirstCryptoBalance = async (user_id: number, currency: string, balance: number): Promise<CryptoBalance> => {
+    try {
+        const result = await pool.query(
+            `INSERT INTO crypto_balances (user_id, currency, balance)
+            VALUES ($1, $2, $3)`,
+            [user_id, currency, balance]
+        )
+        return result.rows[0]
+    } catch (error) {
+        console.log("Error : ", error);
+        throw error;
+    }
+}
+
 export const increaseCryptoBalance = async (user_id: number, currency: string, amount: number) => {
     try {
         const existing = await getCryptoBalance(user_id, currency);
@@ -30,8 +44,8 @@ export const increaseCryptoBalance = async (user_id: number, currency: string, a
                 [amount, user_id, currency]
             );
         } else {
-      return console.log("FiatBalance could not be found with the user.")
-    }
+            return console.log("FiatBalance could not be found with the user.")
+        }
     } catch (error) {
         console.log("Error : ", error);
         throw error

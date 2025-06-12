@@ -20,6 +20,20 @@ export const getFiatBalance = async (userId: number, currency: string): Promise<
   }
 };
 
+export const createFirstFiatBalance = async (user_id: number, currency: string, balance: number): Promise<FiatBalance> => {
+    try {
+        const result = await pool.query(
+            `INSERT INTO crypto_balances (user_id, currency, balance)
+            VALUES ($1, $2, $3)`,
+            [user_id, currency, balance]
+        )
+        return result.rows[0]
+    } catch (error) {
+        console.log("Error : ", error);
+        throw error;
+    }
+}
+
 export const increaseFiatBalance = async (userId: number, currency: string, amount: number) => {
   try {
     const existing = await getFiatBalance(userId, currency);

@@ -7,6 +7,9 @@ import userRoute from "./routes/user.route"
 // import offer routes
 import offerRoute from "./routes/offer.route"
 
+// import transfer routes
+import transferRoute from "./routes/transfer.route"
+
 const app = express();
 const port: number = Number(process.env.SERVER_PORT) || 3000;
 
@@ -16,6 +19,7 @@ app.use(express.json());
 // routes
 app.use("/api", userRoute);
 app.use("/api", offerRoute);
+app.use("/api", transferRoute);
 
 async function startServer() {
   try {
