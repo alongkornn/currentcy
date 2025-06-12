@@ -82,10 +82,13 @@
 ## การนำไปใช้งาน
 
 ### 1. ติดตั้ง Dependencies
+
 ```bash
-bun dev
+bun install
 ```
+
 ### 2. รันเซิร์ฟเวอร์
+
 ```bash
 bun dev
 ```
