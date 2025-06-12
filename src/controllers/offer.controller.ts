@@ -90,7 +90,7 @@ export const createOffer = async (req: Request, res: Response): Promise<void> =>
 
             // อัปเดตจำนวนเงิน
             await reduceFiatBalance(buyerFiatBalance.user_id, buyerFiatBalance.currency, buy_price);
-            await increaseFiatBalance(user_id, currency, buy_price);
+            await increaseFiatBalance(user_id, price_currency, buy_price);
 
             // สร้างประวัติการโอนเหรียญ
             const cryptoTransactionData = {
